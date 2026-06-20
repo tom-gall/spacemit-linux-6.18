@@ -322,6 +322,56 @@ uvc_video_free_requests(struct uvc_video *video)
 	return 0;
 }
 
+static void
+uvc_video_prep_requests(struct uvc_video *video)
+{
+	struct uvc_device *uvc = container_of(video, struct uvc_device, video);
+	struct usb_composite_dev *cdev = uvc->func.config->cdev;
+	unsigned int interval_duration;
+	unsigned int max_req_size, req_size, header_size;
+	unsigned int nreq;
+
+	max_req_size = video->max_req_size;
+
+	if (!usb_endpoint_xfer_isoc(video->ep->desc)) {
+		video->req_size = max_req_size;
+		video->reqs_per_frame = video->uvc_num_requests =
+			DIV_ROUND_UP(video->imagesize, max_req_size);
+
+		return;
+	}
+
+	interval_duration = 2 << (video->ep->desc->bInterval - 1);
+	if (cdev->gadget->speed < USB_SPEED_HIGH)
+		interval_duration *= 10000;
+	else
+		interval_duration *= 1250;
+
+	nreq = DIV_ROUND_UP(video->interval, interval_duration);
+
+	header_size = nreq * UVCG_REQUEST_HEADER_LEN;
+
+	req_size = DIV_ROUND_UP(video->imagesize + header_size, nreq);
+
+	if (req_size > max_req_size) {
+		/* The prepared interval length and expected buffer size
+		 * is not possible to stream with the currently configured
+		 * isoc bandwidth. Fallback to the maximum.
+		 */
+		req_size = max_req_size;
+	}
+	video->req_size = req_size;
+
+	/* We need to compensate the amount of requests to be
+	 * allocated with the maximum amount of zero length requests.
+	 * Since it is possible that hw_submit will initially
+	 * enqueue some zero length requests and we then will not be
+	 * able to fully encode one frame.
+	 */
+	video->uvc_num_requests = nreq + UVCG_REQ_MAX_ZERO_COUNT;
+	video->reqs_per_frame = nreq;
+}
+
 static int
 uvc_video_alloc_requests(struct uvc_video *video)
 {

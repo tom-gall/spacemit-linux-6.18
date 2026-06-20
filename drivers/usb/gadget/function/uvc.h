@@ -96,14 +96,27 @@ struct uvc_video {
 	unsigned int width;
 	unsigned int height;
 	unsigned int imagesize;
+	unsigned int interval;	/* in 100ns units */
 	struct mutex mutex;	/* protects frame parameters */
 
 	unsigned int uvc_num_requests;
 
+    unsigned int reqs_per_frame;
+
 	/* Requests */
+    bool is_enabled; /* tracks whether video stream is enabled */
 	unsigned int req_size;
-	struct uvc_request *ureq;
+	unsigned int max_req_size;
+	struct list_head ureqs; /* all uvc_requests allocated by uvc_video */
+
+	/* USB requests that the video pump thread can encode into */
 	struct list_head req_free;
+
+    /*
+     * USB requests video pump thread has already encoded into. These are
+     * ready to be queued to the endpoint.
+     */
+    struct list_head req_ready;
 	spinlock_t req_lock;
 
 	unsigned int req_int_count;
