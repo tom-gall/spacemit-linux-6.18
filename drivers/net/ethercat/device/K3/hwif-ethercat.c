@@ -308,9 +308,9 @@ static const struct stmmac_hwif_entry {
 
 int ec_stmmac_hwif_init(struct stmmac_priv *priv)
 {
-	bool needs_xgmac = priv->plat->has_xgmac;
-	bool needs_gmac4 = priv->plat->has_gmac4;
-	bool needs_gmac = priv->plat->has_gmac;
+	bool needs_xgmac = (priv->plat->core_type == DWMAC_CORE_XGMAC);
+	bool needs_gmac4 = (priv->plat->core_type == DWMAC_CORE_GMAC4);
+	bool needs_gmac = (priv->plat->core_type == DWMAC_CORE_GMAC);
 	const struct stmmac_hwif_entry *entry;
 	struct mac_device_info *mac;
 	bool needs_setup = true;

@@ -279,3 +279,4 @@ const struct clk_ops spacemit_ccu_plla_ops = {
 	.is_enabled	= ccu_plla_is_enabled,
 };
 
+EXPORT_SYMBOL_NS_GPL(spacemit_ccu_pll_ops, "CLK_SPACEMIT");
