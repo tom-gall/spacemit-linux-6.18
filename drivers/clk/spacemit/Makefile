@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0
 
 obj-$(CONFIG_SPACEMIT_CCU)	+= spacemit-ccu.o
-spacemit-ccu-objs		:= ccu_common.c ccu_pll.o ccu_mix.o ccu_ddn.o
+spacemit-ccu-objs		:= ccu_common.o ccu_pll.o ccu_mix.o ccu_ddn.o
 
 obj-$(CONFIG_SPACEMIT_K1_CCU)	+= spacemit-ccu-k1.o
 spacemit-ccu-k1-y		:= ccu-k1.o
